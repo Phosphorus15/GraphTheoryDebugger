@@ -6,13 +6,14 @@ import java.awt.Graphics2D
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.swing.*
+import javax.swing.JFrame
+import javax.swing.JPanel
 
-inline operator fun String.invoke(block: ()-> Unit) {
+inline operator fun String.invoke(block: () -> Unit) {
     block.invoke()
 }
 
-class GraphCanvas : JPanel(), MouseListener{
+class GraphCanvas : JPanel(), MouseListener {
 
     private val clicked = AtomicBoolean(false)
 
@@ -33,7 +34,7 @@ class GraphCanvas : JPanel(), MouseListener{
 
     override fun mousePressed(e: MouseEvent) {
         println("pressed ${e.point}")
-        if(e.point.x in 10..110 && e.point.y in 10..40) {
+        if (e.point.x in 10..110 && e.point.y in 10..40) {
             clicked.set(true)
             repaint()
         }
