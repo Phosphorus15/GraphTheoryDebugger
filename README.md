@@ -4,9 +4,12 @@ GraphTheoryDebugger
 A Simple Toolkit for Demonstrating [Graphs]
 ---
 
+This toolkit would be helpful for those who are solving an 
+Graph Theory Problem, especially for OIers
+
 Functions Planned :
 
-- [ ] Parse a common adjacent list/matrix (with attributes) 
+- [ ] Parse a common adjacent list/matrix (with attributes)
 
 - [ ] Display the whole / part of the graph (parsed)
 
@@ -14,7 +17,7 @@ Functions Planned :
 
 - [ ] Run some simple graph algorithms (step-by-step debug)
 
-- [ ] Graph Exportation
+- [ ] Graph Exportation (as standard OI or non-standard form)
 
 - [ ] Script parsing support (js ?)
 

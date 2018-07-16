@@ -21,14 +21,15 @@ fun IGraph.walk(node: GraphNode, consumer: (GraphNode) -> Unit) {
 }
 
 fun MutableMap<String, Any>.increaseTag(key: String, amount: Int = 1) = compute(key)
-{ _: String, any: Any? -> return@compute if (any == null || any !is Int) amount else any + amount }
+{ _, any -> return@compute if (any == null || any !is Int) amount else any + amount }
 
 fun MutableMap<String, Any>.decreaseTag(key: String, amount: Int = 1) = compute(key)
-{ _: String, any: Any? -> return@compute if (any == null || any !is Int) -amount else any - amount }
+{ _, any -> return@compute if (any == null || any !is Int) -amount else any - amount }
 
 fun IGraph.evaluateDegree() {
     listNodes().forEach {
-        it.listAdjacent().stream().peek { node -> node.interiorTags.increaseTag("inDegree") }
+        it.listAdjacent().stream().forEach { node -> node.interiorTags.increaseTag("inDegree") }
         it.interiorTags.increaseTag("outDegree", it.listAdjacent().size)
+        if (!it.interiorTags.containsKey("inDegree")) it.interiorTags["inDegree"] = 0
     }
 }

@@ -132,6 +132,8 @@ class AdjacencyMatrix(val height: Int, val width: Int, provider: (Int, Adjacency
 
 class AdjacencyList(size: Int, provider: (Int, AdjacencyList) -> GraphNode) : IGraph(size) {
 
+    constructor(size: Int) : this(size, { number, list -> SimplifiedListNode(number, list) })
+
     private val nodes = (0 until size).map { provider(it, this) }.toMutableList()
 
     override fun listNodes(): List<GraphNode> = nodes
@@ -145,8 +147,13 @@ class AdjacencyList(size: Int, provider: (Int, AdjacencyList) -> GraphNode) : IG
         if (!nodes.contains(node)) {
             node.number = nodes.size
             nodes.add(node)
+            size++
         }
         return node
     }
+
+    fun removeNode(node: GraphNode): Boolean = if (nodes.contains(node)) {
+        size--; nodes.remove(node); true
+    } else false
 
 }
