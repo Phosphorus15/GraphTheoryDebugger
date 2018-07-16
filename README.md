@@ -1,15 +1,21 @@
 GraphTheoryDebugger
 ===
 
-A Simple Toolkit for Demonstrating [Graphs] [1]
+A Simple Toolkit for Demonstrating [Graphs]
 ---
 
 Functions Planned :
 
--[ ] Parse a common adjacent list/matrix (with attributes) 
+- [ ] Parse a common adjacent list/matrix (with attributes) 
 
--[ ] Display the whole / part of the graph (parsed)
+- [ ] Display the whole / part of the graph (parsed)
 
--[ ] Run some simple graph algorithms (step-by-step debug)
+- [ ] Dynamically Editing & demonstrating Graph in GUI
 
-[1]: https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)
+- [ ] Run some simple graph algorithms (step-by-step debug)
+
+- [ ] Graph Exportation
+
+- [ ] Script parsing support (js ?)
+
+[Graphs]: https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)
