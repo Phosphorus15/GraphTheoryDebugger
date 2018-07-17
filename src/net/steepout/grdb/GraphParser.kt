@@ -3,8 +3,12 @@ package net.steepout.grdb
 import java.io.StringReader
 import java.util.*
 
-fun parseSimpleMatrix(matrix: String, height: Int, width: Int): IGraph = // FIXME not to be like this
-        AdjacencyMatrix(height, width).run {
+fun String.asSimpleRawGraph(height: Int, width: Int) = parseSimpleRaw(this, height, width)
+fun String.asSimpleMatrix(size: Int) = parseSimpleMatrix(this, size)
+fun String.asSimpleList(size: Int, edges: Int) = parseSimpleList(this, size, edges)
+
+fun parseSimpleRaw(matrix: String, height: Int, width: Int): IGraph = // FIXME not to be like this
+        RawGraph(height, width).run {
             val matrixObj = this
             Scanner(StringReader(matrix)).run {
                 (0 until height).forEach { x ->
@@ -16,19 +20,35 @@ fun parseSimpleMatrix(matrix: String, height: Int, width: Int): IGraph = // FIXM
             this
         }
 
-fun parseSimpleList(matrix: String, size: Int, edges: Int): IGraph =
-        AdjacencyList(size).run {
+fun parseSimpleMatrix(matrix: String, size: Int): IGraph =
+        AdjacencyList(size).apply {
             val listObj = this
-            Scanner(StringReader(matrix)).run {
-                (0 until size).forEach {
-                    // TODO listing
+            Scanner(StringReader(matrix)).apply {
+                (0 until size).forEach { i ->
+                    (0 until size).forEach { j ->
+                        nextInt().apply {
+                            if (this > 0) (listObj.listNodes()[i] as ListNodeMeta)
+                                    .addAdjacent(j)?.third?.put("distance", this)
+                        }
+                    }
                 }
             }
-            this
+        }
+
+
+fun parseSimpleList(matrix: String, size: Int, edges: Int): IGraph =
+        AdjacencyList(size).apply {
+            val listObj = this
+            Scanner(StringReader(matrix)).apply {
+                (0 until edges).forEach {
+                    (listObj.listNodes()[nextInt()] as ListNodeMeta)
+                            .addAdjacent(nextInt())?.third?.put("distance", nextInt())
+                }
+            }
         }
 
 fun main(args: Array<String>) {
-    parseSimpleMatrix("1 3 2 7 6 9 7 8 10", 3, 3).walk {
+    parseSimpleMatrix("0 0 2 0 6 9 0 8 10", 3).walk {
         println("${it.number} : ${it.value}")
     }
 }

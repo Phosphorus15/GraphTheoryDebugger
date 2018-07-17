@@ -2,6 +2,9 @@ package net.steepout.grdb
 
 import java.util.*
 
+fun Any?.safeInt() = safeInt(0)
+fun Any?.safeInt(default: Int): Int = if (this == null || this !is Int) default else this
+
 fun IGraph.walk(consumer: (GraphNode) -> Unit) {
     if (topologicalBeginning().isPresent)
         walk(topologicalBeginning().get(), consumer)
@@ -32,4 +35,8 @@ fun IGraph.evaluateDegree() {
         it.interiorTags.increaseTag("outDegree", it.listAdjacent().size)
         if (!it.interiorTags.containsKey("inDegree")) it.interiorTags["inDegree"] = 0
     }
+    /*listNodes().forEach{
+        println(it.interiorTags)
+    }*/
 }
+

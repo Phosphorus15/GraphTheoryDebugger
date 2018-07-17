@@ -2,9 +2,9 @@ package net.steepout.grdb
 
 import org.junit.jupiter.api.Test
 
-internal class AdjacencyMatrixTest {
+internal class RawGraphTest {
 
-    var matrix: AdjacencyMatrix = AdjacencyMatrix(10, 3)
+    var matrix: RawGraph = RawGraph(10, 3)
 
     @Test
     fun listNodes() =

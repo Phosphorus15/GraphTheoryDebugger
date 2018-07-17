@@ -45,7 +45,7 @@ abstract class IGraph(var size: Int) : Iterable<GraphNode> {
 
 typealias Matrix<T> = Array<Array<T>>
 
-class AdjacencyMatrixIterator(var matrix: AdjacencyMatrix) : Iterator<GraphNode> {
+class RawGraphIterator(var matrix: RawGraph) : Iterator<GraphNode> {
 
     var sequence: Int = 0
 
@@ -58,7 +58,7 @@ class AdjacencyMatrixIterator(var matrix: AdjacencyMatrix) : Iterator<GraphNode>
 
 }
 
-class SimplifiedMatrixNode(number: Int, private val matrix: AdjacencyMatrix) : SimplifiedGraphNode(number) {
+class SimplifiedMatrixNode(number: Int, private val matrix: RawGraph) : SimplifiedGraphNode(number) {
 
     private val loc = matrix.resolve(number)
 
@@ -83,27 +83,46 @@ class SimplifiedMatrixNode(number: Int, private val matrix: AdjacencyMatrix) : S
 
 }
 
-class SimplifiedListNode(number: Int, private val list: AdjacencyList) : SimplifiedGraphNode(number) {
+interface ListNodeMeta {
 
-    private val adjacent = mutableListOf<GraphNode>()
+    fun addAdjacent(node: GraphNode): Edge?
 
-    override fun listAdjacent(): List<GraphNode> = adjacent
+    fun addDoubleAdjacent(node: SimplifiedListNode) = addAdjacent(node).also { node.addAdjacent(asOptional().get()) }
 
-    fun addAdjacent(node: GraphNode) {
-        if (!adjacent.contains(node)) {
-            adjacent.add(list.addNode(node))
-        }
-    }
+    fun asOptional(): Optional<GraphNode>
 
-    fun addDoubleAdjacent(node: SimplifiedListNode) = addAdjacent(node).also { node.addAdjacent(this) }
+    fun acquireNode(number: Int): Optional<GraphNode>
 
-    fun addAdjacent(number: Int) = addAdjacent(list.listNodes()[number])
+    fun addAdjacent(number: Int) = addAdjacent(acquireNode(number).get())
 
-    fun addDoubleAdjacent(number: Int) = addDoubleAdjacent(list.listNodes()[number] as SimplifiedListNode)
+    fun addDoubleAdjacent(number: Int) = addDoubleAdjacent(acquireNode(number).get() as SimplifiedListNode)
+
+    fun notifyAdjacency(node: GraphNode)
+
+    fun listAdjacent(): List<GraphNode>
 
 }
 
-class AdjacencyMatrix(val height: Int, val width: Int, provider: (Int, AdjacencyMatrix) -> GraphNode) : IGraph(height * width) {
+class SimplifiedListNode(number: Int, private val list: AdjacencyList) : SimplifiedGraphNode(number), ListNodeMeta {
+
+    override fun notifyAdjacency(node: GraphNode) = adjacent.add(node).run {}
+
+    override fun acquireNode(number: Int): Optional<GraphNode> = Optional.ofNullable(list.listNodes()[number])
+
+    private val adjacentEdge = mutableListOf<Edge>()
+
+    private val adjacent = mutableListOf<GraphNode>()
+
+    override fun listAdjacent(): List<GraphNode> = adjacentEdge.map(Edge::second)
+
+    override fun addAdjacent(node: GraphNode) =
+            if (!listAdjacent().contains(node))
+                Edge(this, list.addNode(node), mutableMapOf()).apply { adjacentEdge.add(this) }
+            else null
+
+}
+
+class RawGraph(val height: Int, val width: Int, provider: (Int, RawGraph) -> GraphNode) : IGraph(height * width) {
 
     val matrix: Matrix<GraphNode> = Matrix(height) { x ->
         Array(width) { y ->
@@ -116,7 +135,7 @@ class AdjacencyMatrix(val height: Int, val width: Int, provider: (Int, Adjacency
     })
 
     init {
-        if (height * width <= 0) throw IllegalArgumentException("The size of matrix must be positive !")
+        if (height * width <= 0) throw IllegalArgumentException("The size of graph must be positive !")
     }
 
     override fun listNodes(): List<GraphNode> =
@@ -124,7 +143,7 @@ class AdjacencyMatrix(val height: Int, val width: Int, provider: (Int, Adjacency
 
     override fun topologicalBeginning() = Optional.of(matrix[0][0])
 
-    override fun iterator(): Iterator<GraphNode> = AdjacencyMatrixIterator(this)
+    override fun iterator(): Iterator<GraphNode> = RawGraphIterator(this)
 
     fun resolve(i: Int): Pair<Int, Int> = Pair(i / width, i % width)
 
@@ -138,7 +157,7 @@ class AdjacencyList(size: Int, provider: (Int, AdjacencyList) -> GraphNode) : IG
 
     override fun listNodes(): List<GraphNode> = nodes
 
-    override fun topologicalBeginning() = nodes.also { evaluateDegree() }
+    override fun topologicalBeginning() = nodes.also { evaluateDegree() }.filter { it.interiorTags["outDegree"] != 0 }
             .first { it.interiorTags["inDegree"] == 0 }.asOptional()
 
     override fun iterator(): Iterator<GraphNode> = listNodes().iterator()
@@ -157,3 +176,5 @@ class AdjacencyList(size: Int, provider: (Int, AdjacencyList) -> GraphNode) : IG
     } else false
 
 }
+
+typealias Edge = Triple<GraphNode, GraphNode, MutableMap<String, Any>>
