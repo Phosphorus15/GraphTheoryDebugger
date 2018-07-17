@@ -9,7 +9,9 @@ Graph Theory Problem, especially for OIers
 
 Functions Planned :
 
-- [ ] Parse a common adjacent list/matrix (with attributes)
+- [x] Parse a common adjacent list/matrix
+
+- [ ] Complex list/matrix attributes parsing
 
 - [ ] Display the whole / part of the graph (parsed)
 
