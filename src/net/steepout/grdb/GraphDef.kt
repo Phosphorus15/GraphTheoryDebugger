@@ -3,25 +3,32 @@ package net.steepout.grdb
 import java.lang.IllegalArgumentException
 import java.util.*
 
-interface GraphNode {
+interface IGraphNode {
 
     var number: Int // Unique
 
     var value: Any // Mono Value
 
-    var interiorTags: MutableMap<String, Any>
+    var interiorTags: AttributesMap
 
     fun hasAttributes(): Boolean
 
-    fun getAttributes(): Map<String, Any>?
+    fun getAttributes(): AttributesMap?
 
     fun listAdjacent(): List<GraphNode>
 
+}
+
+abstract class GraphNode : IGraphNode {
+
     fun asOptional() = Optional.of(this)
+
+    override fun toString(): String = "Node instance of ${javaClass.name} - node $number(value = $value)" +
+            if (hasAttributes()) "\n" + getAttributes().toString() else ""
 
 }
 
-abstract class SimplifiedGraphNode(override var number: Int) : GraphNode {
+abstract class SimplifiedGraphNode(override var number: Int) : GraphNode() {
 
     override var value: Any = 0
 
@@ -29,7 +36,7 @@ abstract class SimplifiedGraphNode(override var number: Int) : GraphNode {
 
     override fun hasAttributes() = false
 
-    override fun getAttributes(): Nothing? = null
+    override fun getAttributes(): AttributesMap? = null
 
 }
 
@@ -103,7 +110,7 @@ interface ListNodeMeta {
 
 }
 
-class SimplifiedListNode(number: Int, private val list: AdjacencyList) : SimplifiedGraphNode(number), ListNodeMeta {
+open class SimplifiedListNode(number: Int, private val list: AdjacencyList) : SimplifiedGraphNode(number), ListNodeMeta {
 
     override fun notifyAdjacency(node: GraphNode) = adjacent.add(node).run {}
 
@@ -119,6 +126,18 @@ class SimplifiedListNode(number: Int, private val list: AdjacencyList) : Simplif
             if (!listAdjacent().contains(node))
                 Edge(this, list.addNode(node), mutableMapOf()).apply { adjacentEdge.add(this) }
             else null
+
+}
+
+class AttributedListNode(number: Int, private val list: AdjacencyList) : SimplifiedListNode(number, list) {
+
+    private val attributeList = mutableMapOf<String, Any>()
+
+    override fun hasAttributes(): Boolean = true
+
+    override fun getAttributes() = attributeList
+
+    operator fun get(key: String): Any? = attributeList[key]
 
 }
 
@@ -149,9 +168,12 @@ class RawGraph(val height: Int, val width: Int, provider: (Int, RawGraph) -> Gra
 
 }
 
+val AttributedAdjacencyListBuilder: (Int, AdjacencyList) -> GraphNode = { number, list -> AttributedListNode(number, list) }
+val SimplifiedAdjacencyListBuilder: (Int, AdjacencyList) -> GraphNode = { number, list -> SimplifiedListNode(number, list) }
+
 class AdjacencyList(size: Int, provider: (Int, AdjacencyList) -> GraphNode) : IGraph(size) {
 
-    constructor(size: Int) : this(size, { number, list -> SimplifiedListNode(number, list) })
+    constructor(size: Int) : this(size, SimplifiedAdjacencyListBuilder)
 
     private val nodes = (0 until size).map { provider(it, this) }.toMutableList()
 

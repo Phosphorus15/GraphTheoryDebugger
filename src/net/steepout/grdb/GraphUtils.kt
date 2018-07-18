@@ -2,8 +2,10 @@ package net.steepout.grdb
 
 import java.util.*
 
+typealias AttributesMap = MutableMap<String, Any>
 fun Any?.safeInt() = safeInt(0)
 fun Any?.safeInt(default: Int): Int = if (this == null || this !is Int) default else this
+fun AttributesMap?.safeMap() = this as AttributesMap
 
 fun IGraph.walk(consumer: (GraphNode) -> Unit) {
     if (topologicalBeginning().isPresent)

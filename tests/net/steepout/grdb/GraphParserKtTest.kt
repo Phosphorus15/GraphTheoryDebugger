@@ -24,4 +24,20 @@ internal class GraphParserKtTest {
         "5 2 5 \n 5 0 7 \n 3 5 8".asSimpleList(6, 3).topologicalBeginning().get().number shouldBe 3
     }
 
+    @Test
+    fun parseAttributes() {
+        "0 0 2 0 6 9 0 8 10".asSimpleMatrix(3).apply {
+            parseAttributeList("3 a 2 b -1 c", this as AdjacencyList
+                    , Pair("price", IntegerAttribute), Pair("symbol", CharAttribute))
+        }.listNodes()[2].getAttributes().safeMap()["symbol"]?.shouldBe('c')
+    }
+
+    @Test
+    fun parseIndexedAttributes() {
+        "5 2 5 \n 5 0 7 \n 3 5 8".asSimpleList(6, 3).apply {
+            parseIndexedAttributeList("0 5 a 3 7 d", 2, this as AdjacencyList
+                    , Pair("price", IntegerAttribute), Pair("symbol", CharAttribute))
+        }.listNodes()[3].getAttributes().safeMap()["symbol"]?.shouldBe('d')
+    }
+
 }
